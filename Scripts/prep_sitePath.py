@@ -1,58 +1,26 @@
-#!/usr/bin/env python
-
-
 import os
 import re
-import shutil
 import sqlite3
 from collections import defaultdict
 
 import numpy as np
 import pandas as pd
-from Bio import Phylo, SeqIO, AlignIO
+from Bio import Phylo, AlignIO
 from Bio.Align import MultipleSeqAlignment
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 
-META_FILE = "/Data4/Trimed_seq/metadata-5.tsv"
-MSA_FILE = "/Data4/Trimed_seq/cleaned.fasta"
-MSA_FILE2 = "/Data4/Trimed_seq/combined.fasta"
-SQLITE_FILE = "/Data4/Trimed_seq/sars2.db"
 
-TREES_DIR = "trees"
-OUT_DIR = "renamed_trees"
+SQLITE_FILE = "Data/sars2.db"
+TREES_DIR = "Data/nextstrain_trees"
+OUT_DIR = "Data/nextstrain_trees_with_MSA/"
 
-if os.path.exists(OUT_DIR):
-    shutil.rmtree(OUT_DIR)
-os.mkdir(OUT_DIR)
-
-
-if os.path.exists(SQLITE_FILE):
-    os.remove(SQLITE_FILE)
+# if os.path.exists(OUT_DIR):
+#     shutil.rmtree(OUT_DIR)
+# os.mkdir(OUT_DIR)
 
 conn = sqlite3.connect(SQLITE_FILE)
 cur = conn.cursor()
-
-with conn:
-    cur.execute('''
-        CREATE TABLE records (
-            accession TEXT PRIMARY KEY,
-            sequence TEXT NOT NULL
-        )
-    ''')
-
-with conn:
-    for fn in (MSA_FILE, MSA_FILE2):
-        for record in SeqIO.parse(fn, "fasta"):
-            (accession, ) = re.findall(r"EPI_ISL_[0-9]+", record.description)
-            try:
-                cur.execute(
-                    "INSERT INTO records VALUES (:accession, :sequence)",
-                    { "accession": accession, "sequence":  str(record.seq) }
-                )
-            except sqlite3.IntegrityError:
-                print(accession)
-
 
 matched_files = defaultdict(list)
 for fn in os.listdir(TREES_DIR):
@@ -81,7 +49,10 @@ for date_time, (fn, fn2) in matched_files.items():
         tip.name = metadata.loc[tip.name, "gisaid_epi_isl"]
         if tip.name is None:
             print(seqname)
-        cur.execute("SELECT sequence FROM records WHERE accession=?", (tip.name, ))
+        cur.execute(
+            "SELECT sequence FROM records WHERE accession=?",
+            (tip.name, )
+        )
         res = cur.fetchone()
 #         print(tip.name, res)
         if res is None:
@@ -104,15 +75,24 @@ for date_time, (fn, fn2) in matched_files.items():
         if tip.name is None:
             tree.prune(tip)
     out_seqs = MultipleSeqAlignment(out_seqs)
-    AlignIO.write(out_seqs, os.path.join(out_dir, date_time + ".fasta"), "fasta")
-    Phylo.write(tree, os.path.join(out_dir, date_time + ".nwk"), "newick")
+    AlignIO.write(
+        out_seqs,
+        os.path.join(out_dir, date_time + ".fasta"),
+        "fasta"
+    )
+    Phylo.write(
+        tree,
+        os.path.join(out_dir, date_time + ".nwk"),
+        "newick"
+    )
+
+conn.close()
 
 
 missed.discard(np.nan)
 
-with open("missed.csv", "w") as f:
+with open("Data/missed.csv", "w") as f:
     f.write("\n".join(missed))
     f.write("\n")
 
 len(missed)
-

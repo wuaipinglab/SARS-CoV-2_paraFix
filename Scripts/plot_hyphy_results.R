@@ -1,8 +1,12 @@
 library(jsonlite)
 
 PROTEIN_NAME <- "Spike"
-HYPHY_DIR <- "Data/sampled_hyphy_results/"
-HYPHY_RES_FILE <- "Data/sampled_hyphy_results.csv"
+
+# HYPHY_DIR <- "Data/sampled_hyphy_results/"
+# HYPHY_RES_FILE <- "Data/sampled_hyphy_results.csv"
+
+HYPHY_DIR <- "Data/nextstrain_hyphy_results/"
+HYPHY_RES_FILE <- "Data/nextstrain_hyphy_results.csv"
 
 res <- data.frame(
     "site" = integer(),

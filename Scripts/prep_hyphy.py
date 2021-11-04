@@ -45,7 +45,6 @@ for fn in allDates:
 
 for d in matchedTreeSeq:
     outNexus = Nexus.Nexus()
-#     outSeqs = []
     toRemove = []
     for record in matchedTreeSeq[d]["seq"][:, (proteinSites[0] - 1):proteinSites[-1]]:
         record = SeqRecord(
@@ -56,22 +55,16 @@ for d in matchedTreeSeq:
         if "*" in str(record.translate().seq):
             toRemove.append(record.id)
         else:
-#             outSeqs.append(record)
             outNexus.add_sequence(record.id, record.seq.upper())
-    # AlignIO.write(
-    #     MultipleSeqAlignment(outSeqs),
-    #     os.path.join(HYPHY_DIR, d + "_" + PROTEIN + ".fasta"),
-    #     "fasta"
-    # )
     tree = copy.deepcopy(matchedTreeSeq[d]["tree"])
     for ac in toRemove:
         ac = tree.find_any(ac)
         tree.prune(ac)
-    # Phylo.write(
-    #     tree,
-    #     os.path.join(HYPHY_DIR, d + "_" + PROTEIN + "_test.newick"),
-    #     "newick"
-    # )
+        
+    for tip in tree.get_terminals():
+        if tip.name is None:
+            tree.prune(tip)
+            
     outNexus.trees.append(Trees.Tree(tree.format("newick")))
     
     outDir = os.path.join(HYPHY_DIR, d)

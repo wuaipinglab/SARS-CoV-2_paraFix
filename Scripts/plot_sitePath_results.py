@@ -13,11 +13,11 @@ PROTEIN_NAME = "Spike"
 SITESMAPPING_FILE = "Data/sitesMapping.csv"
 SURVEILLANCE_FILE = "Data/variant_surveillance.tsv"
 
-# PARAFIXSITES_FILE = "Data/paraFixSites_sampled.csv"
+# PARAFIXSITES_FILE = "Data/sampled_sitePath_results.csv"
 # PARAFIXMONTHLY_PLOT = "Output/paraFixedMonthly_sampled.pdf"
 # PARALLELSITES_PLOT = "Output/parallelSites_sampled_recent.pdf"
 
-PARAFIXSITES_FILE = "Data/paraFixSites_sampled_vs_nextstrain.csv"
+PARAFIXSITES_FILE = "Data/nextstrain_sitePath_results.csv"
 PARAFIXMONTHLY_PLOT = "Output/paraFixedMonthly_nextstrain.pdf"
 PARALLELSITES_PLOT = "Output/parallelSites_nextstrain.pdf"
 

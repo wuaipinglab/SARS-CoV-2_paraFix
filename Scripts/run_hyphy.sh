@@ -18,9 +18,9 @@ HYPHY_DIR="Data/nextstrain_hyphy_results/"
 
 for f in $(ls $HYPHY_DIR/*/*.nexus)
 do
-    if [[ ! -f ${f}.FUBAR.json ]]
+    errlog=$(dirname $f)/errors.log
+    if [[ ! -f ${f}.FUBAR.json ]] || [[ -f $errlog ]]
     then
-        echo $f
         cd $(dirname $f)
         hyphy fubar --alignment $(basename $f)
         cd -

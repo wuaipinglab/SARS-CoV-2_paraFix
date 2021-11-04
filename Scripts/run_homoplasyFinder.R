@@ -1,5 +1,5 @@
 library(phangorn)
-library(homoplasyFinder)
+# library(homoplasyFinder)
 
 PROTEIN <- "Spike"
 SITESMAPPING_FILE <- "Data/sitesMapping.csv"

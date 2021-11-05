@@ -11,43 +11,40 @@ from matplotlib.dates import DateFormatter
 PROTEIN_NAME = "Spike"
 
 SITESMAPPING_FILE = "Data/sitesMapping.csv"
-SURVEILLANCE_FILE = "Data/variant_surveillance.tsv"
+BACKGROUND_NUM_FILE = "Data/background_num.json"
+MUTATION_NUM_FILE = "Data/mutation_num.json"
 
-# PARAFIXSITES_FILE = "Data/sampled_sitePath_results.csv"
-# PARAFIXMONTHLY_PLOT = "Output/paraFixedMonthly_sampled.pdf"
-# PARALLELSITES_PLOT = "Output/parallelSites_sampled_recent.pdf"
+# PARAFIXSITES_FILE = "Data/nextstrain_sitePath_results.csv"
+# PARAFIXMONTHLY_PLOT = "Output/nextstrain_detections.pdf"
+# PREVALENCE_PLOT = "Output/nextstrain_first_detection.pdf"
+# DATES_FILE = "Data/nextstrain_dates.json"
 
-PARAFIXSITES_FILE = "Data/nextstrain_sitePath_results.csv"
-PARAFIXMONTHLY_PLOT = "Output/paraFixedMonthly_nextstrain.pdf"
-PARALLELSITES_PLOT = "Output/parallelSites_nextstrain.pdf"
+PARAFIXSITES_FILE = "Data/sampled_sitePath_results.csv"
+PARAFIXMONTHLY_PLOT = "Output/sampled_detections.pdf"
+PREVALENCE_PLOT = "Output/sampled_first_detection.pdf"
+DATES_FILE = "Data/sampled_dates.json"
 
 
 sitesMapping = pd.read_csv(SITESMAPPING_FILE, index_col=0)
 siteLabel = sitesMapping[["peptidePos", "gene"]].drop_duplicates()
 
-df = pd.read_csv("Data/variant_surveillance.tsv", sep="\t", low_memory=False)
-df = df[df["Collection date"].str.len() == 10]
-df["Collection date"] = pd.to_datetime(df["Collection date"])
-df = df[df["Collection date"] > datetime.datetime(2019, 11, 30)]
-
-background = df["Collection date"].value_counts()
-background = background.sort_index()
+with open(DATES_FILE) as f:
+    allDates = json.load(f)
+    allDates = pd.to_datetime(allDates).values
 
 paraFixSites = pd.read_csv(PARAFIXSITES_FILE)
 paraFixSites["date"] = pd.to_datetime(paraFixSites["date"])
 # paraFixSites.loc[paraFixSites["type"] == "paraFix", "type"] = "parallel"
-
+paraFixSites = paraFixSites[paraFixSites["date"].isin(allDates)]
 
 plt.rcParams.update({'font.size': 20, 'font.weight': 'bold'})
 fontsize = 20
 
 typeColors = {
     "fixation": "gold",
-    "paraFix": "red"
+    "paraFix": "red",
+    "parallel": "blue"
 }
-
-y_pos = paraFixSites["date"].unique()
-y_pos.sort()
 
 fig, axes = plt.subplots(
     nrows=2,
@@ -64,8 +61,6 @@ ax.axis("off")
 
 ax = axes[1]
 for mutType, group in paraFixSites.groupby("type"):
-    if mutType == "parallel":
-        continue
     ax.scatter(
         group["site"],
         group["date"],
@@ -90,7 +85,7 @@ plt.show()
 # The mutation trend plot
 
 selectedSites = paraFixSites[
-    (paraFixSites["type"] == "paraFix") &
+    # (paraFixSites["type"] == "paraFix") &
     (paraFixSites["gene"] == PROTEIN_NAME)
 ]
 
@@ -99,31 +94,39 @@ paraFixSitesDate = {
     for aaPos, group in selectedSites.groupby("aaPos")
 }
 
-sortedSites = sorted(
-    paraFixSitesDate,
-    key=lambda site: len(paraFixSitesDate[site]),
-    reverse=True
-)
-
 # sortedSites = sorted(
 #     paraFixSitesDate,
-#     key=lambda site: paraFixSitesDate[site][0],
+#     key=lambda site: len(paraFixSitesDate[site]),
 #     reverse=True
 # )
 
+sortedSites = sorted(
+    paraFixSitesDate,
+    key=lambda site: paraFixSitesDate[site][0],
+    reverse=True
+)
+
+with open(BACKGROUND_NUM_FILE) as f:
+    background = json.load(f)
+    background = pd.DataFrame(background.items(), columns=["date", "num"])
+    background["date"] = pd.to_datetime(background["date"])
+    background = background.set_index("date")
+    background = background.sort_index()
+
+with open(MUTATION_NUM_FILE) as f:
+    mutation_num = json.load(f)
+
 mutSites = {}
 for aaPos in sortedSites[:10]:
-    c_date = df.loc[df["AA Substitutions"].str.contains(
-        "Spike_[A-Z]{}".format(aaPos),
-        na=False,
-        regex=True
-    ), "Collection date"]
-    c_date = c_date.value_counts()
-    mutSites[aaPos] = c_date.sort_index()
+    daily_num = mutation_num[str(aaPos)]
+    daily_num = pd.DataFrame(daily_num.items(), columns=["date", "num"])
+    daily_num["date"] = pd.to_datetime(daily_num["date"])
+    daily_num = daily_num.set_index("date")
+    daily_num = daily_num.sort_index()
+    mutSites[aaPos] = daily_num
 
-
-x_pos = background.index.unique()
-x_pos = x_pos.sort_values()
+x_pos = background.index.values
+x_pos.sort()
 
 nrows = 2
 ncols = 5
@@ -140,9 +143,9 @@ for ax in axes:
     axes2.extend(ax)
 
 n = 0
+bgNum = background["num"].values
 for site, meta in mutSites.items():
-    bgNum = background.values
-    mutNum = [meta[d] if d in meta.index else 0 for d in x_pos]
+    mutNum = [meta.loc[d, "num"] if d in meta.index else 0 for d in x_pos]
 
     ax = axes2[n]
     if n >= nrows * ncols:
@@ -163,5 +166,5 @@ for site, meta in mutSites.items():
     ax.xaxis.set_major_formatter(DateFormatter('%b %Y'))
     ax.set_xlabel(site, fontsize=fontsize, fontweight='bold')
 
-plt.savefig(PARALLELSITES_PLOT, bbox_inches="tight")
+plt.savefig(PREVALENCE_PLOT, bbox_inches="tight")
 plt.show()

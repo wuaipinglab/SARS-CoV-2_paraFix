@@ -4,16 +4,16 @@ library(phangorn)
 PROTEIN <- "Spike"
 SITESMAPPING_FILE <- "Data/sitesMapping.csv"
 
-# HOMOPLASYFINDER_RES_DIR <-
-#     "Data/nextstrain_homoplasyFinder_results/"
-# HOMOPLASYFINDER_RES_FILE <- "Data/nextstrain_homoplasyFinder.csv"
-# # HOMOPLASYFINDER_RES_AA_FILE <-
-# #     paste0("Data/nextstrain_homoplasyFinder_", PROTEIN, ".csv")
-
-HOMOPLASYFINDER_RES_DIR <- "Data/sampled_homoplasyFinder_results/"
-HOMOPLASYFINDER_RES_FILE <- "Data/sampled_homoplasyFinder.csv"
+HOMOPLASYFINDER_RES_DIR <-
+    "Data/nextstrain_homoplasyFinder_results/"
+HOMOPLASYFINDER_RES_FILE <- "Data/nextstrain_homoplasyFinder.csv"
 # HOMOPLASYFINDER_RES_AA_FILE <-
-#     paste0("Data/sampled_homoplasyFinder_", PROTEIN, ".csv")
+#     paste0("Data/nextstrain_homoplasyFinder_", PROTEIN, ".csv")
+
+# HOMOPLASYFINDER_RES_DIR <- "Data/sampled_homoplasyFinder_results/"
+# HOMOPLASYFINDER_RES_FILE <- "Data/sampled_homoplasyFinder.csv"
+# # HOMOPLASYFINDER_RES_AA_FILE <-
+# #     paste0("Data/sampled_homoplasyFinder_", PROTEIN, ".csv")
 
 CURRENT_DIR <- getwd()
 
@@ -85,7 +85,7 @@ for (fn in list.files(HOMOPLASYFINDER_RES_DIR)) {
     #     identical(test$ConsistencyIndex, test$consistencyIndex)
 }
 
-write.csv(res, HOMOPLASYFINDER_RES_FILE)
+write.csv(res, HOMOPLASYFINDER_RES_FILE, row.names = FALSE)
 
 # print(all(comparisonRes))
 

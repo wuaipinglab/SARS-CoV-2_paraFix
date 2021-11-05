@@ -23,7 +23,7 @@ adjacent_dates = set()
 
 for d1, _ in sampled_dates.groupby("date"):
     d2 = nextstrain_dates.loc[abs(nextstrain_dates["date"] - d1).idxmin(), "date"]
-    if (d1 <= endDate or d2 <= endDate) and (d1 >= startDate or d2 >= startDate):
+    if (d1 <= endDate and d2 <= endDate) and (d1 >= startDate and d2 >= startDate):
         reference_dates.add(d1.strftime("%Y-%m-%d"))
         adjacent_dates.add(d2.strftime("%Y-%m-%d"))
 

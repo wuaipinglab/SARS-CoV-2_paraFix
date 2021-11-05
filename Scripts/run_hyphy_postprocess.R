@@ -2,11 +2,11 @@ library(jsonlite)
 
 PROTEIN_NAME <- "Spike"
 
-# HYPHY_DIR <- "Data/sampled_hyphy_results/"
-# HYPHY_RES_FILE <- "Data/sampled_hyphy_results.csv"
-
 HYPHY_DIR <- "Data/nextstrain_hyphy_results/"
 HYPHY_RES_FILE <- "Data/nextstrain_hyphy_results.csv"
+
+# HYPHY_DIR <- "Data/sampled_hyphy_results/"
+# HYPHY_RES_FILE <- "Data/sampled_hyphy_results.csv"
 
 res <- data.frame(
     "site" = integer(),
@@ -48,7 +48,7 @@ for (fn in list.files(HYPHY_DIR)) {
     res <- rbind(res, selectedSites)
 }
 
-write.csv(res, HYPHY_RES_FILE)
+write.csv(res, HYPHY_RES_FILE, row.names = FALSE)
 
 
 # hyphySlac <- read_json("Data/sampled_hyphy_results/2021-07-01/2021-07-01_Spike.nexus.SLAC.json")

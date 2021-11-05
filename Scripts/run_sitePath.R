@@ -4,15 +4,15 @@ library(sitePath)
 
 SITESMAPPING_FILE <- "Data/sitesMapping.csv"
 
-# TREES_DIR <- "Data/sampled_trees_with_MSA/"
-# SITEPATH_RES_DIR <- "Data/sampled_sitePath_results/"
-# PARAFIXSITES_FILE <- "Data/sampled_sitePath_results.csv"
-# DATES_FILE <- "Data/sampled_dates.json"
-
 TREES_DIR <- "Data/nextstrain_trees_with_MSA/"
 SITEPATH_RES_DIR <- "Data/nextstrain_sitePath_results/"
 PARAFIXSITES_FILE <- "Data/nextstrain_sitePath_results.csv"
 DATES_FILE <- "Data/nextstrain_dates.json"
+
+# TREES_DIR <- "Data/sampled_trees_with_MSA/"
+# SITEPATH_RES_DIR <- "Data/sampled_sitePath_results/"
+# PARAFIXSITES_FILE <- "Data/sampled_sitePath_results.csv"
+# DATES_FILE <- "Data/sampled_dates.json"
 
 
 cat("Run sitePath for each date\n")

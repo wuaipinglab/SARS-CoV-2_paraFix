@@ -11,6 +11,7 @@ BACKGROUND_NUM_FILE = "Data/background_num.json"
 MUTATION_NUM_FILE = "Data/mutation_num.json"
 # MUTATION_NUM_FILE = "../test.json"
 SITES_PREVALENCE_FILE = "Data/sitesPrevalence.json"
+PREVALENCE_INTO_FILE = "Data/prevalenceInfo.csv"
 PREVALENCE_PLOT = "Output/prevalence.pdf"
 PERCENTAGE_SUM_PLOT = "Output/percentage_sum.pdf"
 
@@ -33,6 +34,7 @@ for continent, group in mutation_num.items():
     for aaPos, daily_num in group.items():
         percentage_sum = 0
         prevalent_days = 0
+        prevalent_dates = []
         for d in daily_num:
             day_total = background[continent][d]
             if day_total > DAY_TOTAL_THRESHOLD:
@@ -40,6 +42,11 @@ for continent, group in mutation_num.items():
                 percentage_sum += percentage
                 if percentage > PREVALENCE_PERCENTAGE_THRESHOLD:
                     prevalent_days += 1
+                    prevalent_dates.append(d)
+        
+        prevalent_dates = pd.to_datetime(prevalent_dates)
+        if len(prevalent_dates):
+            break
         
         allMutSites.append({
             "aaPos": aaPos,
@@ -49,6 +56,7 @@ for continent, group in mutation_num.items():
         })
 allMutSites = pd.DataFrame.from_records(allMutSites)
 
+allMutSites.to_csv(PREVALENCE_INTO_FILE, index=False)
 
 plt.rcParams.update({'font.size': 20, 'font.weight': 'bold'})
 fontsize = 20
@@ -112,7 +120,7 @@ for continent, group in background.items():
     mutSites = mutSites.sort_values("prevalent_days", ascending=False)
     selectedSites = mutSites.head(topNum)["aaPos"].values
     
-    prevalence_sites = set()
+    prevalence_sites = list()
     for aaPos in selectedSites:
         daily_num = mutation_num[continent][str(aaPos)]
         daily_num = pd.DataFrame(daily_num.items(), columns=["date", "num"])
@@ -123,14 +131,16 @@ for continent, group in background.items():
         topMutSitesOrder[continent].append(aaPos)
         (percentage_sum, ) = mutSites.loc[mutSites["aaPos"] == aaPos, "prevalent_days"].values
         if percentage_sum > PREVALENCE_THRESHOLD:
-            prevalence_sites.add(int(aaPos))
+            prevalence_sites.append(int(aaPos))
 
     
     allSitesPos = pd.to_numeric(mutSites["aaPos"].unique())
     non_prevalent_sites = set(allSitesPos).difference(prevalence_sites)
     
+    print(continent, prevalence_sites)
+    
     sitesPrevalence[continent] = {
-        "prevalent": list(prevalence_sites),
+        "prevalent": prevalence_sites,
         "non_prevalent": [int(i) for i in non_prevalent_sites]
     }
     

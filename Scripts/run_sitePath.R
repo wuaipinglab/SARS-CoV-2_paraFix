@@ -70,7 +70,7 @@ for (fn in allDates) {
 }
 
 
-cat("Summary the results...")
+cat("Summary the results...\n")
 
 sitesMapping <- read.csv(SITESMAPPING_FILE, row.names = 1)
 

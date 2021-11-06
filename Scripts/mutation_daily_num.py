@@ -1,6 +1,8 @@
 import os
+import gc
 import json
 import datetime
+from collections import defaultdict
 
 import pandas as pd
 
@@ -18,18 +20,27 @@ df = pd.read_csv(SURVEILLANCE_FILE, sep="\t", low_memory=False)
 df = df[df["Collection date"].str.len() == 10]
 df["Collection date"] = pd.to_datetime(df["Collection date"])
 df = df[df["Collection date"] > datetime.datetime(2019, 11, 30)]
-
-background = df["Collection date"].value_counts()
-background = background.sort_index()
+df["Continent"] = df["Location"].str.split(" / ").str[0]
 
 
-bgNum = {}
-for d in background.index:
-    d_str = d.strftime("%Y-%m-%d")
-    bgNum[d_str] = int(background[d])
+globalDates = pd.to_datetime(df["Collection date"].unique())
+
+bgNum = defaultdict(dict) 
+for continent, group in df.groupby("Continent"):
+    background = group["Collection date"].value_counts()
+    background = background.sort_index()
+
+    for d in globalDates:
+        d_str = d.strftime("%Y-%m-%d")
+        if d in background.index:
+            bgNum[continent][d_str] = int(background[d])
+        else:
+            bgNum[continent][d_str] = 0
     
 with open(BACKGROUND_NUM_FILE, "w") as f:
     json.dump(bgNum, f)
+    
+del bgNum
 
 sitesMapping = pd.read_csv(SITESMAPPING_FILE, index_col=0)
 allSites = sitesMapping[sitesMapping["product"] == PROTEIN_NAME]
@@ -37,25 +48,32 @@ allSites = allSites["aaPos"].drop_duplicates().values
 
 print("Summarize percentage sum...")
 
-mutation_num = {}
+mutation_num = defaultdict(dict)
+# for aaPos in allSites[612:615]:
 for aaPos in allSites:
     print(aaPos)
-    c_date = df.loc[df["AA Substitutions"].str.contains(
-        "Spike_[A-Z]{}".format(aaPos),
-        na=False,
-        regex=True
-    ), "Collection date"].value_counts()
-    c_date = c_date.sort_index()
-    
-    percentage_daily = {}
-    for d in background.index:
-        d_str = d.strftime("%Y-%m-%d")
-        if d in c_date.index:
-            percentage_daily[d_str] = int(c_date[d])
-        else:
-            percentage_daily[d_str] = 0
-    
-    mutation_num[int(aaPos)] = percentage_daily
+    for continent, group in df.groupby("Continent"):
+        c_date = group.loc[group["AA Substitutions"].str.contains(
+            "Spike_[A-Z]{}[A-Z]".format(aaPos),
+            na=False,
+            regex=True
+        ), "Collection date"].value_counts()
+        c_date = c_date.sort_index()
+        
+        percentage_daily = {}
+        for d in globalDates:
+            d_str = d.strftime("%Y-%m-%d")
+            if d in c_date.index:
+                percentage_daily[d_str] = int(c_date[d])
+            else:
+                percentage_daily[d_str] = 0
+        
+        mutation_num[continent][int(aaPos)] = percentage_daily
+
+    gc.collect()
     
 with open(MUTATION_NUM_FILE, "w") as f:
     json.dump(mutation_num, f)
+
+# with open("../test.json", "w") as f:
+#     json.dump(mutation_num, f)

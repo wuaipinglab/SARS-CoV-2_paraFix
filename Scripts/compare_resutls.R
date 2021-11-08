@@ -7,7 +7,8 @@ BACKGROUND_NUM_FILE <- "Data/background_num.json"
 MUTATION_NUM_FILE <- "Data/mutation_num.json"
 PREVALENCE_INTO_FILE <- "Data/prevalenceInfo.csv"
 
-BASELINE_FILE <- "Data/nextstrain_trees_unused_results.csv"
+BASELINE_FILE <- "Data/nextstrain_trees_unused.csv"
+THRESHOLD_FILE <- "Data/nextstrain_trees_unused_0.1.csv"
 PARAFIXSITES_FILE <- "Data/nextstrain_sitePath_results.csv"
 HOMOPLASYFINDER_RES_FILE <- "Data/nextstrain_homoplasyFinder.csv"
 HYPHY_RES_FILE <- "Data/nextstrain_hyphy_results.csv"
@@ -16,7 +17,8 @@ DATES_FILE <- "Data/nextstrain_dates.json"
 METRIC_PLOT_1 <- "Output/nextstrain_specificity.pdf"
 METRIC_PLOT_2 <- "Output/nextstrain_sensitivity.pdf"
 
-# BASELINE_FILE <- "Data/sampled_trees_unused_results.csv"
+# BASELINE_FILE <- "Data/sampled_trees_unused.csv"
+# THRESHOLD_FILE <- "Data/sampled_trees_unused_0.1.csv"
 # PARAFIXSITES_FILE <- "Data/sampled_sitePath_results.csv"
 # HOMOPLASYFINDER_RES_FILE <- "Data/sampled_homoplasyFinder.csv"
 # HYPHY_RES_FILE <- "Data/sampled_hyphy_results.csv"
@@ -35,7 +37,7 @@ sitesPrevalence <-
     read_json(SITES_PREVALENCE_FILE, simplifyVector = TRUE)
 
 conserved <- read.csv(CONSERVED_SITES_FILE)
-conserved <- conserved[which(conserved$product == PROTEIN_NAME),]
+conserved <- conserved[which(conserved$product == PROTEIN_NAME), ]
 conserved <- split(conserved$aaPos, conserved$date)
 # allMutSites <- read.csv(PREVALENCE_INTO_FILE)
 
@@ -55,18 +57,22 @@ nonPrevalentSites <- unique(nonPrevalentSites)
 #     site
 # })
 
-
-
 baselineSites <- read.csv(BASELINE_FILE)
 baselineSites <-
-    baselineSites[which(baselineSites$product == PROTEIN_NAME),]
+    baselineSites[which(baselineSites$product == PROTEIN_NAME), ]
 baselineSites <-
     split(baselineSites[, c("aaPos", "mutRatio")], baselineSites$date)
+
+thresholdSites <- read.csv(THRESHOLD_FILE)
+thresholdSites <-
+    thresholdSites[which(thresholdSites$product == PROTEIN_NAME), ]
+thresholdSites <-
+    split(thresholdSites[, c("aaPos", "mutRatio")], thresholdSites$date)
 
 
 paraFixSites <- read.csv(PARAFIXSITES_FILE)
 paraFixSites <-
-    paraFixSites[which(paraFixSites$product == PROTEIN_NAME),]
+    paraFixSites[which(paraFixSites$product == PROTEIN_NAME), ]
 paraFixSites <-
     split(paraFixSites[, c("aaPos", "type")], paraFixSites$date)
 
@@ -78,7 +84,7 @@ hyphySites <-
 
 homoplasySites <- read.csv(HOMOPLASYFINDER_RES_FILE)
 homoplasySites <-
-    homoplasySites[which(homoplasySites$product == PROTEIN_NAME),]
+    homoplasySites[which(homoplasySites$product == PROTEIN_NAME), ]
 homoplasySites <-
     split(homoplasySites[, c("aaPos", "consistencyIndex")], homoplasySites$date)
 
@@ -110,7 +116,12 @@ allMetrics <- do.call(rbind, lapply(allDates, function(d) {
                          allPrevalentSites,
                          true_negative,
                          d,
-                         "MSA_only")
+                         "MSA")
+    th_res <- getMetrics(thresholdSites[[d]][["aaPos"]],
+                         allPrevalentSites,
+                         true_negative,
+                         d,
+                         "MSA_0.1")
     sp_res <- getMetrics(paraFixSites[[d]][["aaPos"]],
                          allPrevalentSites,
                          true_negative,
@@ -126,7 +137,7 @@ allMetrics <- do.call(rbind, lapply(allDates, function(d) {
                          true_negative,
                          d,
                          "homoplasy")
-    do.call(rbind, list(bs_res, sp_res, hp_res, pa_res))
+    do.call(rbind, list(bs_res, th_res, sp_res, hp_res, pa_res))
 }))
 
 

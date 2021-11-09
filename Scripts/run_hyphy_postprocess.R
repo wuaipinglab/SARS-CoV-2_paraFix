@@ -1,12 +1,12 @@
 library(jsonlite)
 
-PROTEIN_NAME <- "Spike"
+PROTEIN_NAMEs <- c("Spike", "N")
 
-HYPHY_DIR <- "Data/nextstrain_hyphy_results/"
-HYPHY_RES_FILE <- "Data/nextstrain_hyphy_results.csv"
+# HYPHY_DIR <- "Data/nextstrain_hyphy_results/"
+# HYPHY_RES_FILE <- "Data/nextstrain_hyphy_results.csv"
 
-# HYPHY_DIR <- "Data/sampled_hyphy_results/"
-# HYPHY_RES_FILE <- "Data/sampled_hyphy_results.csv"
+HYPHY_DIR <- "Data/sampled_hyphy_results/"
+HYPHY_RES_FILE <- "Data/sampled_hyphy_results.csv"
 
 res <- data.frame(
     "site" = integer(),
@@ -16,36 +16,41 @@ res <- data.frame(
 )
 
 for (fn in list.files(HYPHY_DIR)) {
-    fp <-
-        file.path(HYPHY_DIR, fn, paste0(fn, "_", PROTEIN_NAME, ".nexus.FUBAR.json"))
-    hyphyFubar <- read_json(fp)
-    resolved <- hyphyFubar[["MLE"]][["content"]][[1]]
-    names(resolved) <- seq_along(resolved)
-    
-    contentNames <- sapply(hyphyFubar[["MLE"]][["headers"]], "[[", 1)
-    resolved <- lapply(resolved, function(site) {
-        names(site) <- contentNames
-        site
-    })
-    selectedSites <- resolved[which(sapply(resolved, function(site) {
-        if (site[["Prob[alpha<beta]"]] >= 0.9) {
-            return(TRUE)
-        }
-        return(FALSE)
-    }))]
-    
-    selectedSites <-
-        do.call(rbind, lapply(names(selectedSites), function(siteName) {
-            site <- selectedSites[[siteName]]
-            posterior <- site[["Prob[alpha<beta]"]]
-            data.frame(
-                "site" = as.integer(siteName),
-                "posterior" = posterior,
-                "protein" = PROTEIN_NAME,
-                "date" = fn
-            )
-        }))
-    res <- rbind(res, selectedSites)
+    for (protein in PROTEIN_NAMEs) {
+        fp <- file.path(HYPHY_DIR,
+                        fn,
+                        paste0(fn, "_", protein, ".nexus.FUBAR.json"))
+        hyphyFubar <- read_json(fp)
+        resolved <- hyphyFubar[["MLE"]][["content"]][[1]]
+        names(resolved) <- seq_along(resolved)
+        
+        contentNames <-
+            sapply(hyphyFubar[["MLE"]][["headers"]], "[[", 1)
+        resolved <- lapply(resolved, function(site) {
+            names(site) <- contentNames
+            site
+        })
+        selectedSites <-
+            resolved[which(sapply(resolved, function(site) {
+                if (site[["Prob[alpha<beta]"]] >= 0.9) {
+                    return(TRUE)
+                }
+                return(FALSE)
+            }))]
+        
+        selectedSites <-
+            do.call(rbind, lapply(names(selectedSites), function(siteName) {
+                site <- selectedSites[[siteName]]
+                posterior <- site[["Prob[alpha<beta]"]]
+                data.frame(
+                    "site" = as.integer(siteName),
+                    "posterior" = posterior,
+                    "protein" = protein,
+                    "date" = fn
+                )
+            }))
+        res <- rbind(res, selectedSites)
+    }
 }
 
 write.csv(res, HYPHY_RES_FILE, row.names = FALSE)

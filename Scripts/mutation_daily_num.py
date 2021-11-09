@@ -8,11 +8,12 @@ import pandas as pd
 
 
 PROTEIN_NAME = "Spike"
+# PROTEIN_NAME = "N"
 
 SITESMAPPING_FILE = "Data/sitesMapping.csv"
 SURVEILLANCE_FILE = "Data/variant_surveillance.tsv"
 BACKGROUND_NUM_FILE = "Data/background_num.json"
-MUTATION_NUM_FILE = "Data/mutation_num.json"
+MUTATION_NUM_FILE = "Data/mutation_num_" + PROTEIN_NAME + ".json"
 
 print("Load data...")
 
@@ -54,7 +55,7 @@ for aaPos in allSites:
     print(aaPos)
     for continent, group in df.groupby("Continent"):
         c_date = group.loc[group["AA Substitutions"].str.contains(
-            "Spike_[A-Z]{}[A-Z]".format(aaPos),
+            f"{PROTEIN_NAME}_[A-Z]{aaPos}[A-Z]",
             na=False,
             regex=True
         ), "Collection date"].value_counts()

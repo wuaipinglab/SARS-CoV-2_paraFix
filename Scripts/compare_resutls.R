@@ -2,30 +2,37 @@ library(jsonlite)
 library(ggplot2)
 
 PROTEIN_NAME <- "Spike"
-SITES_PREVALENCE_FILE <- "Data/sitesPrevalence.json"
+# PROTEIN_NAME <- "N"
+
+SAMPLING_METHOD <- "nextstrain"
+# SAMPLING_METHOD <- "sampled"
+
 BACKGROUND_NUM_FILE <- "Data/background_num.json"
-MUTATION_NUM_FILE <- "Data/mutation_num.json"
-PREVALENCE_INTO_FILE <- "Data/prevalenceInfo.csv"
 
-BASELINE_FILE <- "Data/nextstrain_trees_unused.csv"
-THRESHOLD_FILE <- "Data/nextstrain_trees_unused_0.1.csv"
-PARAFIXSITES_FILE <- "Data/nextstrain_sitePath_results.csv"
-HOMOPLASYFINDER_RES_FILE <- "Data/nextstrain_homoplasyFinder.csv"
-HYPHY_RES_FILE <- "Data/nextstrain_hyphy_results.csv"
-CONSERVED_SITES_FILE <- "Data/nextstrain_conserved_sites.csv"
-DATES_FILE <- "Data/nextstrain_dates.json"
-METRIC_PLOT_1 <- "Output/nextstrain_specificity.pdf"
-METRIC_PLOT_2 <- "Output/nextstrain_sensitivity.pdf"
+SITES_PREVALENCE_FILE <-
+    paste0("Data/sitesPrevalence_", PROTEIN_NAME, ".json")
+MUTATION_NUM_FILE <-
+    paste0("Data/mutation_num_", PROTEIN_NAME, ".json")
+PREVALENCE_INTO_FILE <-
+    paste0("Data/prevalenceInfo_", PROTEIN_NAME, ".csv")
 
-# BASELINE_FILE <- "Data/sampled_trees_unused.csv"
-# THRESHOLD_FILE <- "Data/sampled_trees_unused_0.1.csv"
-# PARAFIXSITES_FILE <- "Data/sampled_sitePath_results.csv"
-# HOMOPLASYFINDER_RES_FILE <- "Data/sampled_homoplasyFinder.csv"
-# HYPHY_RES_FILE <- "Data/sampled_hyphy_results.csv"
-# CONSERVED_SITES_FILE <- "Data/sampled_conserved_sites.csv"
-# DATES_FILE <- "Data/sampled_dates.json"
-# METRIC_PLOT_1 <- "Output/sampled_specificity.pdf"
-# METRIC_PLOT_2 <- "Output/sampled_sensitivity.pdf"
+
+BASELINE_FILE <-
+    paste0("Data/", SAMPLING_METHOD, "_trees_unused.csv")
+THRESHOLD_FILE <-
+    paste0("Data/", SAMPLING_METHOD, "_trees_unused_0.1.csv")
+PARAFIXSITES_FILE <-
+    paste0("Data/", SAMPLING_METHOD, "_sitePath_results.csv")
+HOMOPLASYFINDER_RES_FILE <-
+    paste0("Data/", SAMPLING_METHOD, "_homoplasyFinder.csv")
+HYPHY_RES_FILE <-
+    paste0("Data/", SAMPLING_METHOD, "_hyphy_results.csv")
+CONSERVED_SITES_FILE <-
+    paste0("Data/", SAMPLING_METHOD, "_conserved_sites.csv")
+DATES_FILE <- paste0("Data/", SAMPLING_METHOD, "_dates.json")
+
+PLOT_TITLE <- paste0(SAMPLING_METHOD, "_", PROTEIN_NAME)
+METRIC_PLOT <- paste0("Output/", PLOT_TITLE, ".pdf")
 
 
 
@@ -99,79 +106,65 @@ getMetrics <- function(pred,
     
     tn <- length(setdiff(true_negative, pred))
     fn <- length(setdiff(true_positive, pred))
-    return(
-        data.frame(
-            "specificity" = tn / (tn + fp),
-            "sensitivity" = tp / (tp + fn),
-            "method" = method_name,
-            "date" = as.Date(test_date)
-        )
-    )
+    return(data.frame(
+        "metric" = c("specificity", "sensitivity"),
+        "value" = c(tn / (tn + fp), tp / (tp + fn)),
+        "method" = method_name,
+        "date" = as.Date(test_date)
+    ))
 }
 
 
 allMetrics <- do.call(rbind, lapply(allDates, function(d) {
+    true_positive <- setdiff(allPrevalentSites, conserved[[d]])
     true_negative <- setdiff(nonPrevalentSites, conserved[[d]])
-    bs_res <- getMetrics(baselineSites[[d]][["aaPos"]],
-                         allPrevalentSites,
-                         true_negative,
-                         d,
-                         "MSA")
+    # bs_res <- getMetrics(baselineSites[[d]][["aaPos"]],
+    #                      true_positive,
+    #                      true_negative,
+    #                      d,
+    #                      "MSA")
     th_res <- getMetrics(thresholdSites[[d]][["aaPos"]],
-                         allPrevalentSites,
+                         true_positive,
                          true_negative,
                          d,
-                         "MSA_0.1")
+                         "MSA_only")
     sp_res <- getMetrics(paraFixSites[[d]][["aaPos"]],
-                         allPrevalentSites,
+                         true_positive,
                          true_negative,
                          d,
                          "sitePath")
     hp_res <- getMetrics(hyphySites[[d]][["site"]],
-                         allPrevalentSites,
+                         true_positive,
                          true_negative,
                          d,
                          "hyphy_fubar")
     pa_res <- getMetrics(unique(homoplasySites[[d]][["aaPos"]]),
-                         allPrevalentSites,
+                         true_positive,
                          true_negative,
                          d,
                          "homoplasy")
-    do.call(rbind, list(bs_res, th_res, sp_res, hp_res, pa_res))
+    do.call(rbind, list(th_res, sp_res, hp_res, pa_res))
 }))
 
 
 p <- ggplot(allMetrics,
             aes(
                 x = date,
-                y = specificity,
+                y = value,
                 group = method,
                 color = method
             )) +
-    geom_line() + geom_point() + ggtitle("specificity")
+    geom_line() +
+    geom_point() +
+    facet_grid(cols = vars(metric)) +
+    ylim(0, 1) +
+    ggtitle(PLOT_TITLE)
 p
 
 ggsave(
-    filename = METRIC_PLOT_1,
+    filename = METRIC_PLOT,
     plot = p,
     device = "pdf",
-    width = 6,
-    height = 6
-)
-
-p <- ggplot(allMetrics,
-            aes(
-                x = date,
-                y = sensitivity,
-                group = method,
-                color = method
-            )) +
-    geom_line() + geom_point() + ggtitle("sensitivity")
-p
-ggsave(
-    filename = METRIC_PLOT_2,
-    plot = p,
-    device = "pdf",
-    width = 6,
+    width = 10,
     height = 6
 )

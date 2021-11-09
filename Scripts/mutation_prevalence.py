@@ -7,13 +7,16 @@ from matplotlib import pyplot as plt
 from matplotlib.dates import DateFormatter
 
 
+# PROTEIN_NAME = "Spike"
+PROTEIN_NAME = "N"
+
 BACKGROUND_NUM_FILE = "Data/background_num.json"
-MUTATION_NUM_FILE = "Data/mutation_num.json"
-# MUTATION_NUM_FILE = "../test.json"
-SITES_PREVALENCE_FILE = "Data/sitesPrevalence.json"
-PREVALENCE_INTO_FILE = "Data/prevalenceInfo.csv"
-PREVALENCE_PLOT = "Output/prevalence.pdf"
-PERCENTAGE_SUM_PLOT = "Output/percentage_sum.pdf"
+MUTATION_NUM_FILE = "Data/mutation_num_" + PROTEIN_NAME + ".json"
+SITES_PREVALENCE_FILE = "Data/sitesPrevalence_" + PROTEIN_NAME + ".json"
+PREVALENCE_INTO_FILE = "Data/prevalenceInfo_" + PROTEIN_NAME + ".csv"
+PREVALENCE_PLOT = "Output/prevalence_" + PROTEIN_NAME + ".pdf"
+PREVALENCE_LOWER_PLOT = "Output/prevalence_lower_" + PROTEIN_NAME + ".pdf"
+PERCENTAGE_SUM_PLOT = "Output/percentage_sum_" + PROTEIN_NAME + ".pdf"
 
 DAY_TOTAL_THRESHOLD = 20
 PREVALENCE_PERCENTAGE_THRESHOLD = 0.5
@@ -45,8 +48,8 @@ for continent, group in mutation_num.items():
                     prevalent_dates.append(d)
         
         prevalent_dates = pd.to_datetime(prevalent_dates)
-        if len(prevalent_dates):
-            break
+        # if len(prevalent_dates):
+        #     break
         
         allMutSites.append({
             "aaPos": aaPos,
@@ -233,4 +236,4 @@ for j in range(nregion):
 #             if i == 0:
 #                 axes[i][j].legend(loc='upper left')
 
-plt.savefig("Output/prevalence_lower.pdf", bbox_inches="tight")
+plt.savefig(PREVALENCE_LOWER_PLOT, bbox_inches="tight")

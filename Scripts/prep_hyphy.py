@@ -10,7 +10,6 @@ from Bio.SeqRecord import SeqRecord
 from Bio.Align import MultipleSeqAlignment
 from Bio.Nexus import Nexus, Trees
 
-PROTEIN = "Spike"
 
 TREES_DIR = "Data/nextstrain_trees_with_MSA/"
 HYPHY_DIR = "Data/nextstrain_hyphy_results/"
@@ -27,52 +26,55 @@ with open(DATES_FILE) as f:
     allDates = json.load(f)
     
 sitesMapping = pd.read_csv("Data/sitesMapping.csv", index_col=0)
-proteinSites = sitesMapping[(sitesMapping["product"] == PROTEIN) &
-                            (sitesMapping["aa"] != "*")]["genomePos"].values
-prevSite = 0
-for site in proteinSites:
-    if site != prevSite + 1:
-        print("Discontinued at", prevSite)
-    prevSite = site
 
-
-matchedTreeSeq = defaultdict(dict)
-for fn in allDates:
-    baseName = os.path.join(TREES_DIR, fn, fn)
-    matchedTreeSeq[fn]["tree"] = Phylo.read(baseName + ".nwk", "newick")
-    matchedTreeSeq[fn]["seq"] = AlignIO.read(baseName + ".fasta", "fasta")
-
-
-for d in matchedTreeSeq:
-    outNexus = Nexus.Nexus()
-    toRemove = []
-    for record in matchedTreeSeq[d]["seq"][:, (proteinSites[0] - 1):proteinSites[-1]]:
-        record = SeqRecord(
-            Seq(str(record.seq).replace("-", "n")),
-            id=record.id,
-            description=""
-        )
-        if "*" in str(record.translate().seq):
-            toRemove.append(record.id)
-        else:
-            outNexus.add_sequence(record.id, record.seq.upper())
-    tree = copy.deepcopy(matchedTreeSeq[d]["tree"])
-    for ac in toRemove:
-        ac = tree.find_any(ac)
-        tree.prune(ac)
-        
-    for tip in tree.get_terminals():
-        if tip.name is None:
-            tree.prune(tip)
-            
-    outNexus.trees.append(Trees.Tree(tree.format("newick")))
+# for protein in sitesMapping["product"].unique():
+for protein in ["Spike", "N"]:
+    proteinSites = sitesMapping[(sitesMapping["product"] == protein) &
+                                (sitesMapping["aa"] != "*")]["genomePos"].values
+    prevSite = 0
+    for site in proteinSites:
+        if site != prevSite + 1:
+            print("Discontinued at", prevSite)
+        prevSite = site
     
-    outDir = os.path.join(HYPHY_DIR, d)
-    if not os.path.exists(outDir):
-        os.mkdir(outDir)
-    outFileName = os.path.join(outDir, d + "_" + PROTEIN + ".nexus")
-    outNexus.write_nexus_data(outFileName)
-    with open(outFileName, "a") as f:
-        f.write("begin trees;\n")
-        f.write(str(outNexus.trees[0]))
-        f.write("\nend;\n")
+    
+    matchedTreeSeq = defaultdict(dict)
+    for fn in allDates:
+        baseName = os.path.join(TREES_DIR, fn, fn)
+        matchedTreeSeq[fn]["tree"] = Phylo.read(baseName + ".nwk", "newick")
+        matchedTreeSeq[fn]["seq"] = AlignIO.read(baseName + ".fasta", "fasta")
+    
+    
+    for d in matchedTreeSeq:
+        outNexus = Nexus.Nexus()
+        toRemove = []
+        for record in matchedTreeSeq[d]["seq"][:, (proteinSites[0] - 1):proteinSites[-1]]:
+            record = SeqRecord(
+                Seq(str(record.seq).replace("-", "n")),
+                id=record.id,
+                description=""
+            )
+            if "*" in str(record.translate().seq):
+                toRemove.append(record.id)
+            else:
+                outNexus.add_sequence(record.id, record.seq.upper())
+        tree = copy.deepcopy(matchedTreeSeq[d]["tree"])
+        for ac in toRemove:
+            ac = tree.find_any(ac)
+            tree.prune(ac)
+            
+        for tip in tree.get_terminals():
+            if tip.name is None:
+                tree.prune(tip)
+                
+        outNexus.trees.append(Trees.Tree(tree.format("newick")))
+        
+        outDir = os.path.join(HYPHY_DIR, d)
+        if not os.path.exists(outDir):
+            os.mkdir(outDir)
+        outFileName = os.path.join(outDir, d + "_" + protein + ".nexus")
+        outNexus.write_nexus_data(outFileName)
+        with open(outFileName, "a") as f:
+            f.write("begin trees;\n")
+            f.write(str(outNexus.trees[0]))
+            f.write("\nend;\n")

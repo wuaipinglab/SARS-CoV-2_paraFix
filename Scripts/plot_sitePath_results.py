@@ -9,10 +9,12 @@ from matplotlib.dates import DateFormatter
 
 
 PROTEIN_NAME = "Spike"
+# PROTEIN_NAME = "N"
 
-SITESMAPPING_FILE = "Data/sitesMapping.csv"
 BACKGROUND_NUM_FILE = "Data/background_num.json"
-MUTATION_NUM_FILE = "Data/mutation_num.json"
+MUTATION_NUM_FILE = "Data/mutation_num_" + PROTEIN_NAME + ".json"
+SITES_PREVALENCE_FILE = "Data/sitesPrevalence_" + PROTEIN_NAME + ".json"
+PREVALENCE_INTO_FILE = "Data/prevalenceInfo_" + PROTEIN_NAME + ".csv"
 
 # PARAFIXSITES_FILE = "Data/nextstrain_sitePath_results.csv"
 # PARAFIXMONTHLY_PLOT = "Output/nextstrain_detections.pdf"
@@ -25,7 +27,7 @@ PREVALENCE_PLOT = "Output/sampled_first_detection.pdf"
 DATES_FILE = "Data/sampled_dates.json"
 
 
-sitesMapping = pd.read_csv(SITESMAPPING_FILE, index_col=0)
+sitesMapping = pd.read_csv("Data/sitesMapping.csv", index_col=0)
 siteLabel = sitesMapping[["peptidePos", "gene"]].drop_duplicates()
 
 with open(DATES_FILE) as f:
@@ -80,91 +82,4 @@ ax.spines['bottom'].set_visible(False)
 ax.legend(bbox_to_anchor=(1, 1))
 
 plt.savefig(PARAFIXMONTHLY_PLOT, bbox_inches="tight")
-plt.show()
-
-# The mutation trend plot
-
-selectedSites = paraFixSites[
-    # (paraFixSites["type"] == "paraFix") &
-    (paraFixSites["gene"] == PROTEIN_NAME)
-]
-
-paraFixSitesDate = {
-    aaPos: sorted(group["date"].values)
-    for aaPos, group in selectedSites.groupby("aaPos")
-}
-
-# sortedSites = sorted(
-#     paraFixSitesDate,
-#     key=lambda site: len(paraFixSitesDate[site]),
-#     reverse=True
-# )
-
-sortedSites = sorted(
-    paraFixSitesDate,
-    key=lambda site: paraFixSitesDate[site][0],
-    reverse=True
-)
-
-with open(BACKGROUND_NUM_FILE) as f:
-    background = json.load(f)
-    background = pd.DataFrame(background.items(), columns=["date", "num"])
-    background["date"] = pd.to_datetime(background["date"])
-    background = background.set_index("date")
-    background = background.sort_index()
-
-with open(MUTATION_NUM_FILE) as f:
-    mutation_num = json.load(f)
-
-mutSites = {}
-for aaPos in sortedSites[:10]:
-    daily_num = mutation_num[str(aaPos)]
-    daily_num = pd.DataFrame(daily_num.items(), columns=["date", "num"])
-    daily_num["date"] = pd.to_datetime(daily_num["date"])
-    daily_num = daily_num.set_index("date")
-    daily_num = daily_num.sort_index()
-    mutSites[aaPos] = daily_num
-
-x_pos = background.index.values
-x_pos.sort()
-
-nrows = 2
-ncols = 5
-
-fig, axes = plt.subplots(
-    nrows=nrows,
-    ncols=ncols,
-    sharex=True,
-    sharey=True,
-    figsize = (3 * ncols * 2.4, 24)
-)
-axes2 = []
-for ax in axes:
-    axes2.extend(ax)
-
-n = 0
-bgNum = background["num"].values
-for site, meta in mutSites.items():
-    mutNum = [meta.loc[d, "num"] if d in meta.index else 0 for d in x_pos]
-
-    ax = axes2[n]
-    if n >= nrows * ncols:
-        break
-    n += 1
-    
-    ax.fill_between(x_pos, 0, bgNum, label = "Backgroup", facecolor='#AFDAE8')
-    ax.fill_between(x_pos, 0, mutNum, label = "mutation", facecolor='#F7E15F')
-    ax.vlines(
-        x=paraFixSitesDate[site][0],
-        colors="red",
-        ymin=0,
-        ymax=max(bgNum),
-        linewidth=3
-    )
-    ax.tick_params(axis='x', labelrotation=60)
-    ax.set_xlim([x_pos[1], x_pos[-1]])
-    ax.xaxis.set_major_formatter(DateFormatter('%b %Y'))
-    ax.set_xlabel(site, fontsize=fontsize, fontweight='bold')
-
-plt.savefig(PREVALENCE_PLOT, bbox_inches="tight")
 plt.show()

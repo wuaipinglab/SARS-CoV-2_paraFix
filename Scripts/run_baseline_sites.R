@@ -1,22 +1,30 @@
 library(jsonlite)
 library(seqinr)
 
-SITESMAPPING_FILE <- "Data/sitesMapping.csv"
+# SAMPLING_METHOD <- "nextstrain"
+SAMPLING_METHOD <- "sampled"
+
 MUTATION_THRESHOLD <- 0.1
 
-TREES_DIR <- "Data/nextstrain_trees_with_MSA/"
-BASELINE_FILE <- "Data/nextstrain_trees_unused.csv"
-THRESHOLD_FILE <- "Data/nextstrain_trees_unused_0.1.csv"
-CONSERVED_SITES_FILE <- "Data/nextstrain_conserved_sites.csv"
-DATES_FILE <- "Data/nextstrain_dates.json"
+TREES_DIR <- paste0("Data/", SAMPLING_METHOD, "_trees_with_MSA/")
+DATES_FILE <- paste0("Data/", SAMPLING_METHOD, "_dates.json")
+CONSERVED_SITES_FILE <-
+    paste0("Data/", SAMPLING_METHOD, "_conserved_sites.csv")
+BASELINE_FILE <-
+    paste0("Data/", SAMPLING_METHOD, "_trees_unused.csv")
+THRESHOLD_FILE <- paste0("Data/",
+                         SAMPLING_METHOD,
+                         "_trees_unused_",
+                         MUTATION_THRESHOLD,
+                         ".csv")
 
 # TREES_DIR <- "Data/sampled_trees_with_MSA/"
+# DATES_FILE <- "Data/sampled_dates.json"
+# CONSERVED_SITES_FILE <- "Data/sampled_conserved_sites.csv"
 # BASELINE_FILE <- "Data/sampled_trees_unused.csv"
 # THRESHOLD_FILE <- "Data/sampled_trees_unused_0.1.csv"
-# CONSERVED_SITES_FILE <- "Data/sampled_conserved_sites.csv"
-# DATES_FILE <- "Data/sampled_dates.json"
 
-sitesMapping <- read.csv(SITESMAPPING_FILE, row.names = 1)
+sitesMapping <- read.csv("Data/sitesMapping.csv", row.names = 1)
 allDates <- read_json(DATES_FILE, simplifyVector = TRUE)
 
 sitesMappingAA <-
@@ -33,7 +41,7 @@ mutRatioSummary <- lapply(allDates, function(fn) {
         do.call(rbind, lapply(seq_len(nsites), function(i) {
             aaSummary <- table(substr(seqs, i, i))
             refInfo <-
-                sitesMappingAA[which(sitesMappingAA$peptidePos == i),]
+                sitesMappingAA[which(sitesMappingAA$peptidePos == i), ]
             refAA <- refInfo[["aa"]]
             
             refNum <- aaSummary[[refAA]]
@@ -50,18 +58,19 @@ mutRatioSummary <- lapply(allDates, function(fn) {
 })
 
 res <- do.call(rbind, lapply(mutRatioSummary, function(mutRatios) {
-    mutRatios[which(mutRatios$mutRatio > MUTATION_THRESHOLD),]
+    mutRatios[which(mutRatios$mutRatio > MUTATION_THRESHOLD), ]
 }))
 
 write.csv(res, THRESHOLD_FILE, row.names = FALSE)
 
 res2 <- do.call(rbind, lapply(mutRatioSummary, function(mutRatios) {
-    mutRatios[which(mutRatios$mutRatio > 0),]
+    mutRatios[which(mutRatios$mutRatio > 0), ]
 }))
 write.csv(res2, BASELINE_FILE, row.names = FALSE)
 
 
-conserved <- do.call(rbind, lapply(mutRatioSummary, function(mutRatios) {
-    mutRatios[which(mutRatios$mutRatio == 0), ]
-}))
+conserved <-
+    do.call(rbind, lapply(mutRatioSummary, function(mutRatios) {
+        mutRatios[which(mutRatios$mutRatio == 0),]
+    }))
 write.csv(conserved, CONSERVED_SITES_FILE, row.names = FALSE)

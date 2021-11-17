@@ -269,7 +269,7 @@ for domain, sites in PROTEIN_DOMAIN[virus][protein].items():
     
 # Script for parallel sites
 for category, sites in targetSites.items():
-    if category == "parallel":
+    if category == "paraFix":
         sel = " or ".join([f"c. {c} and i. {i}" for _, c, i in sites.itertuples()])
         col = SITES_COLOR[category]
         pmlScript.extend([
@@ -293,5 +293,3 @@ for category, sites in targetSites.items():
 
 with open("Output/script_parallel.pml", 'w') as f:
     f.write("; ".join(pmlScript))
-
-

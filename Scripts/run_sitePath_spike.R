@@ -48,16 +48,23 @@ outFile <- file.path(OUTPUT_DIR, paste0("fixation.rds"))
 if (!file.exists(outFile)) {
     fixed <- fixationSites(minEntropy)
     saveRDS(fixed, file = outFile)
+} else {
+    fixed <- readRDS(outFile)
 }
 
 outFile <- file.path(OUTPUT_DIR, paste0("parallel.rds"))
 if (!file.exists(outFile)) {
     para <- parallelSites(minEntropy)
     saveRDS(para, file = outFile)
+} else {
+    para <- readRDS(outFile)
 }
 
-res <- list("fixation" = as.integer(allSitesName(fixed)),
-            "parallel" = as.integer(allSitesName(para)))
+fixation <- as.integer(allSitesName(fixed))
+parallel <- as.integer(allSitesName(para))
+
+res <- list("fixation" = fixation,
+            "paraFix" = intersect(fixation, parallel))
 
 write_json(res, "Data/SARS-CoV-2_spike/targetSites.json")
 

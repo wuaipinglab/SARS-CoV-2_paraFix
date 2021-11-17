@@ -255,7 +255,10 @@ df <- data.frame(
 paths <- attr(fixed, "paths")
 tree <- attr(paths, "tree")
 edgeLengths <- node.depth.edgelength(tree)
-for (site in names(paraSites)) {
+for (site in allSitesName(paraSites)) {
+    if (!site %in% allSitesName(fixed)) {
+        next
+    }
     aaPos <- as.integer(site)
     mutTips <- as.data.frame(sapply(
         X = extractTips(paraSites[[site]]),

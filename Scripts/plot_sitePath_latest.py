@@ -16,15 +16,13 @@ MUTATION_NUM_FILE = "Data/mutation_num_" + PROTEIN_NAME + ".json"
 SITES_PREVALENCE_FILE = "Data/sitesPrevalence_" + PROTEIN_NAME + ".json"
 PREVALENCE_INTO_FILE = "Data/prevalenceInfo_" + PROTEIN_NAME + ".csv"
 
-# PARAFIXSITES_FILE = "Data/nextstrain_sitePath_results.csv"
-# PARAFIXMONTHLY_PLOT = "Output/nextstrain_detections.pdf"
-# PREVALENCE_PLOT = "Output/nextstrain_first_detection.pdf"
-# DATES_FILE = "Data/nextstrain_dates.json"
+PARAFIXSITES_FILE = "Data/nextstrain_sitePath_results.csv"
+PARAFIXMONTHLY_PLOT = "Output/nextstrain_sitePath_results.pdf"
+DATES_FILE = "Data/nextstrain_dates.json"
 
-PARAFIXSITES_FILE = "Data/sampled_sitePath_results.csv"
-PARAFIXMONTHLY_PLOT = "Output/sampled_detections.pdf"
-PREVALENCE_PLOT = "Output/sampled_first_detection.pdf"
-DATES_FILE = "Data/sampled_dates.json"
+# PARAFIXSITES_FILE = "Data/sampled_sitePath_results.csv"
+# PARAFIXMONTHLY_PLOT = "Output/sampled_sitePath_results.pdf"
+# DATES_FILE = "Data/sampled_dates.json"
 
 
 sitesMapping = pd.read_csv("Data/sitesMapping.csv", index_col=0)
@@ -36,7 +34,7 @@ with open(DATES_FILE) as f:
 
 paraFixSites = pd.read_csv(PARAFIXSITES_FILE)
 paraFixSites["date"] = pd.to_datetime(paraFixSites["date"])
-# paraFixSites.loc[paraFixSites["type"] == "paraFix", "type"] = "parallel"
+paraFixSites = paraFixSites[paraFixSites["type"] == "paraFix"]
 paraFixSites = paraFixSites[paraFixSites["date"].isin(allDates)]
 
 plt.rcParams.update({'font.size': 20, 'font.weight': 'bold'})
@@ -56,10 +54,13 @@ fig, axes = plt.subplots(
     gridspec_kw={ "height_ratios": [1, 10], "hspace": 0 }
 )
 
+
 ax = axes[0]
-for name, group in siteLabel.groupby("gene"):
-    ax.fill_between(group["peptidePos"], 0, 1)
+for name, group in siteLabel.groupby("gene", sort=False):
+    ax.fill_between(group["peptidePos"], 0, 1, label=name)
 ax.axis("off")
+ax.legend(bbox_to_anchor=(1.1, 1.1))
+
 
 ax = axes[1]
 for mutType, group in paraFixSites.groupby("type"):
@@ -79,7 +80,6 @@ ax.yaxis.set_major_formatter(DateFormatter('%b %Y'))
 ax.spines['top'].set_visible(False)
 ax.spines['right'].set_visible(False)
 ax.spines['bottom'].set_visible(False)
-ax.legend(bbox_to_anchor=(1, 1))
 
 plt.savefig(PARAFIXMONTHLY_PLOT, bbox_inches="tight")
 plt.show()

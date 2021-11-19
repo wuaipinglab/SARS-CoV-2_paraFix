@@ -34,3 +34,14 @@ for seq_fp in glob.glob(os.path.join("Data/sampled_trees/", "*", "*.fasta")):
             out_seq_aa_fp
         )
         
+# OUT_DIR = "Data/latest_trees_with_MSA/"
+# 
+# 
+# for tree_fp in glob.glob(os.path.join(OUT_DIR, "*", "*.treefile")):
+#     dn = os.path.dirname(tree_fp)
+#     out_tree_fp = os.path.join(dn, os.path.basename(dn) + ".nwk")
+#     shutil.copyfile(
+#         tree_fp,
+#         out_tree_fp
+#     )
+#     print(tree_fp)

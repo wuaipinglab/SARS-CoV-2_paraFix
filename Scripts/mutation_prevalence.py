@@ -60,6 +60,7 @@ for continent, group in mutation_num.items():
 allMutSites = pd.DataFrame.from_records(allMutSites)
 
 allMutSites.to_csv(PREVALENCE_INTO_FILE, index=False)
+print(PREVALENCE_INTO_FILE, "saved")
 
 plt.rcParams.update({'font.size': 20, 'font.weight': 'bold'})
 fontsize = 20
@@ -102,6 +103,7 @@ for continent, mutSites in allMutSites.groupby("continent"):
     ax.set_yscale('log')
     
 plt.savefig(PERCENTAGE_SUM_PLOT, bbox_inches="tight")
+print(PERCENTAGE_SUM_PLOT, "saved")
 # plt.show()
 
 # The plot for the prevalent sites
@@ -149,6 +151,7 @@ for continent, group in background.items():
     
 with open(SITES_PREVALENCE_FILE, "w") as f:
     json.dump(sitesPrevalence, f)
+    print(SITES_PREVALENCE_FILE, "saved")
 
 
 # Plot for prevalent sites
@@ -197,6 +200,7 @@ for j in range(nregion):
 #                 axes[i][j].legend(loc='upper left')
 
 plt.savefig(PREVALENCE_PLOT, bbox_inches="tight")
+print(PREVALENCE_PLOT, "saved")
 # plt.show()
 
 
@@ -237,3 +241,4 @@ for j in range(nregion):
 #                 axes[i][j].legend(loc='upper left')
 
 plt.savefig(PREVALENCE_LOWER_PLOT, bbox_inches="tight")
+print(PREVALENCE_LOWER_PLOT, "saved")

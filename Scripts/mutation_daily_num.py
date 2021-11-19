@@ -40,6 +40,7 @@ for continent, group in df.groupby("Continent"):
     
 with open(BACKGROUND_NUM_FILE, "w") as f:
     json.dump(bgNum, f)
+    print(BACKGROUND_NUM_FILE, "saved")
     
 del bgNum
 
@@ -75,6 +76,7 @@ for aaPos in allSites:
     
 with open(MUTATION_NUM_FILE, "w") as f:
     json.dump(mutation_num, f)
+    print(MUTATION_NUM_FILE, "saved")
 
 # with open("../test.json", "w") as f:
 #     json.dump(mutation_num, f)

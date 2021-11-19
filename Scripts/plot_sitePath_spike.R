@@ -203,7 +203,7 @@ gr <- GRanges(seqname, IRanges(df[["refSite"]],
                                width = 1,
                                names = paste0(df[["prevAA"]], df[["refSite"]], df[["fixedAA"]])))
 gr$color <- as.character(df[["color"]])
-gr$score <- (df[["fixationDepth"]] - min(df[["fixationDepth"]])) * 100
+gr$score <- (df[["fixationDepth"]] - min(df[["fixationDepth"]])) * 5000
 gr$label <- as.character(df[["fixedAA"]])
 gr$label.col <- "#DBD9DA"
 
@@ -305,7 +305,7 @@ gr <- GRanges(seqname, IRanges(df[["refSite"]],
                                width = 1,
                                names = paste0(df[["prevAA"]], df[["refSite"]], df[["fixedAA"]])))
 gr$color <- as.character(df[["color"]])
-gr$score <- (df[["fixationDepth"]] - min(df[["fixationDepth"]])) * 100
+gr$score <- (df[["fixationDepth"]] - min(df[["fixationDepth"]])) * 5000
 gr$label <- as.character(df[["fixedAA"]])
 gr$label.col <- "#DBD9DA"
 
@@ -341,4 +341,25 @@ lolliplot(
     ranges = GRanges(seqname, IRanges(0, maxLen)),
     ylab = "Distance to root",
     yaxis = FALSE
+)
+
+
+p <- plot(fixed) + theme(legend.position = "none")
+print(p)
+ggsave(
+    filename = "Output/sitePath_fixation.svg",
+    plot = p,
+    device = "svg",
+    width = 10,
+    height = 6
+)
+
+p <- plot(paraSites, y = F)
+print(p)
+ggsave(
+    filename = "Output/sitePath_parallel.svg",
+    plot = p,
+    device = "svg",
+    width = 10,
+    height = 6
 )

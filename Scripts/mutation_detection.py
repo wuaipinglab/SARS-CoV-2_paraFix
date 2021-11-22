@@ -26,8 +26,8 @@ HOMOPLASYFINDER_RES_FILE = "Data/" + SAMPLING_METHOD + "_homoplasyFinder.csv"
 HYPHY_RES_FILE = "Data/" + SAMPLING_METHOD + "_hyphy_results.csv"
 
 
-sitesMapping = pd.read_csv("Data/sitesMapping.csv", index_col=0)
-siteLabel = sitesMapping[["peptidePos", "gene"]].drop_duplicates()
+# sitesMapping = pd.read_csv("Data/sitesMapping.csv", index_col=0)
+# siteLabel = sitesMapping[["peptidePos", "gene"]].drop_duplicates()
 
 with open(BACKGROUND_NUM_FILE) as f:
     background = json.load(f)

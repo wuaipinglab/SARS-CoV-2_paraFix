@@ -61,8 +61,8 @@ combinedParaFixSites.reset_index(inplace=True)
 
 allDates = list(combinedParaFixSites["date"].unique())
 
-plt.rcParams.update({'font.size': 20, 'font.weight': 'bold'})
-fontsize = 20
+plt.rcParams.update({'font.size': 40, 'font.weight': 'bold'})
+fontsize = 40
 
 typeColors = {
     "fixation": "gold",
@@ -74,7 +74,7 @@ fig, axes = plt.subplots(
     nrows=1,
     ncols=2,
     sharey=True,
-    figsize=(30, 30),
+    figsize=(30, 50),
     gridspec_kw={ "width_ratios": [1, 20], "hspace": 0 }
 )
 
@@ -122,6 +122,7 @@ ax.set_ylim([-100, 9900])
 ax.set_yticks([])
 ax.set_yticklabels([])
 ax.xaxis.set_major_formatter(DateFormatter('%b %Y'))
+ax.tick_params(axis='x', labelrotation=60)
 ax.spines['top'].set_visible(False)
 ax.spines['right'].set_visible(False)
 ax.spines['left'].set_visible(False)
@@ -252,6 +253,9 @@ for site in set([*allRecentSites, *allOldSites]):
             rep_continent = continent
     sites_rep_continent[site] = rep_continent
 
+plt.rcParams.update({'font.size': 20, 'font.weight': 'bold'})
+fontsize = 20
+
 nrows = 2
 ncols = 1
 
@@ -260,7 +264,7 @@ fig, axes = plt.subplots(
     ncols=ncols,
     sharex=True,
     sharey=False,
-    figsize = (5 * ncols * 2.4, 24)
+    figsize = (10 * ncols, 10 * nrows)
 )
 
 axes2 = []
@@ -321,17 +325,18 @@ for i in range(nrows * ncols):
 plt.savefig(f"Output/latest_sitePath_new_detection.pdf", bbox_inches="tight")
 
 
+plt.rcParams.update({'font.size': 30, 'font.weight': 'bold'})
+fontsize = 30
 
-
-nrows = 2
-ncols = 4
+nrows = 4
+ncols = 2
 
 fig, axes = plt.subplots(
     nrows=nrows,
     ncols=ncols,
     sharex=True,
     sharey=False,
-    figsize = (5 * ncols * 2.4, 24)
+    figsize = (10 * ncols, 10 * nrows)
 )
 
 axes2 = []

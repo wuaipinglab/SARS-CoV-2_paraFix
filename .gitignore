@@ -1,6 +1,6 @@
 Data/
 Output/
-*.jar
+Scripts/scratch*
 
 .Rprofile
 # Created by https://www.toptal.com/developers/gitignore/api/r

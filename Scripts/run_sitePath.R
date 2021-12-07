@@ -4,6 +4,8 @@ library(sitePath)
 
 SITESMAPPING_FILE <- "Data/sitesMapping.csv"
 
+PARALLEL_THRESHOLD <- 0.001
+
 TREES_DIR <- "Data/nextstrain_trees_with_MSA/"
 SITEPATH_RES_DIR <- "Data/nextstrain_sitePath_results/"
 PARAFIXSITES_FILE <- "Data/nextstrain_sitePath_results.csv"
@@ -29,16 +31,7 @@ for (fn in allDates) {
     outFile <- file.path(outputDir, paste0(fn, ".rds"))
     if (!file.exists(outFile)) {
         inputDir <- file.path(TREES_DIR, fn)
-        # f_base_name <- paste0("sample_com_", gsub("-", "", fn))
-        # tree <-
-        #     read.tree(file.path(inputDir, paste0(f_base_name, ".fasta.treefile")))
-        # paths <- addMSA(
-        #     tree = tree,
-        #     msaPath = file.path(inputDir, paste0(f_base_name, "_aa.fasta")),
-        #     msaFormat = "fasta"
-        # )
-        tree <-
-            read.tree(file.path(inputDir, paste0(fn, ".nwk")))
+        tree <- read.tree(file.path(inputDir, paste0(fn, ".nwk")))
         paths <- addMSA(
             tree = tree,
             msaPath = file.path(inputDir, paste0(fn, "_aa.fasta")),
@@ -67,6 +60,14 @@ for (fn in allDates) {
         paraFix <- paraFixSites(minEntropy, mutMode = "all")
         saveRDS(paraFix, file = outFile)
     }
+    
+    minSNP <- PARALLEL_THRESHOLD * ape::Ntip(as.phylo(minEntropy))
+    outFile <- file.path(outputDir,
+                         paste0("parallel_", PARALLEL_THRESHOLD, ".rds"))
+    if (!file.exists(outFile)) {
+        para <- parallelSites(minEntropy, minSNP = minSNP)
+        saveRDS(para, file = outFile)
+    }
 }
 
 
@@ -79,7 +80,10 @@ allSites <- lapply(allDates, function(collectionDate) {
     
     resDir <- file.path(SITEPATH_RES_DIR, collectionDate)
     fixedSites <- readRDS(file.path(resDir, "fixation.rds"))
-    paraSites <- readRDS(file.path(resDir, "parallel.rds"))
+    # paraSites <- readRDS(file.path(resDir, "parallel.rds"))
+    paraSites <- readRDS(file.path(resDir, paste0(
+        "parallel_", PARALLEL_THRESHOLD, ".rds"
+    )))
     collectionDate <- as.Date(collectionDate)
     
     fixed <- allSitesName(fixedSites)
@@ -101,7 +105,7 @@ allSites <- lapply(allDates, function(collectionDate) {
     
 })
 
-paraFixSites <- merge(
+res <- merge(
     x = do.call(rbind, allSites),
     y = unique(sitesMapping[, c("gene", "product", "aaPos", "peptidePos", "aa")]),
     by.x = "site",
@@ -109,4 +113,4 @@ paraFixSites <- merge(
     all.x = TRUE
 )
 
-write.csv(paraFixSites, PARAFIXSITES_FILE, row.names = FALSE)
+write.csv(res, PARAFIXSITES_FILE, row.names = FALSE)

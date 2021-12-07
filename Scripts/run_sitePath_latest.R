@@ -1,19 +1,19 @@
 library(sitePath)
 
 
+PARALLEL_THRESHOLD <- 0.001
+
 SITESMAPPING_FILE <- "Data/sitesMapping.csv"
 TREES_DIR <- "Data/latest_trees_with_MSA/"
-PARAFIXSITES_FILE <- "Data/latest_sitePath_results.csv"
+PARAFIXSITES_LATEST_FILE <- "Data/latest_sitePath_results.csv"
 
 options(list("cl.cores" = 20))
 
 sitesMapping <- read.csv(SITESMAPPING_FILE, row.names = 1)
 
-allSites <- data.frame(
-    "site" = integer(),
-    "type" = character(),
-    "date" = vector()
-)
+allSites <- data.frame("site" = integer(),
+                       "type" = character(),
+                       "date" = vector())
 for (fn in dir(TREES_DIR)) {
     print(fn)
     outputDir <- file.path(TREES_DIR, fn)
@@ -41,10 +41,20 @@ for (fn in dir(TREES_DIR)) {
         fixedSites <- readRDS(outFile)
     }
     
-    outFile <- file.path(outputDir, "parallel.rds")
+    # outFile <- file.path(outputDir, "parallel.rds")
+    # if (!file.exists(outFile)) {
+    #     paraSites <- parallelSites(minEntropy)
+    #     saveRDS(paraSites, file = outFile)
+    # } else {
+    #     paraSites <- readRDS(outFile)
+    # }
+    
+    minSNP <- PARALLEL_THRESHOLD * ape::Ntip(as.phylo(minEntropy))
+    outFile <- file.path(outputDir,
+                         paste0("parallel_", PARALLEL_THRESHOLD, ".rds"))
     if (!file.exists(outFile)) {
-        paraSites <- parallelSites(minEntropy)
-        saveRDS(paraSites, file = outFile)
+        paraSites <- parallelSites(minEntropy, minSNP = minSNP)
+        saveRDS(para, file = outFile)
     } else {
         paraSites <- readRDS(outFile)
     }
@@ -69,7 +79,7 @@ for (fn in dir(TREES_DIR)) {
 }
 
 
-paraFixSites <- merge(
+res <- merge(
     x = allSites,
     y = unique(sitesMapping[, c("gene", "product", "aaPos", "peptidePos", "aa")]),
     by.x = "site",
@@ -77,4 +87,4 @@ paraFixSites <- merge(
     all.x = TRUE
 )
 
-write.csv(paraFixSites, PARAFIXSITES_FILE, row.names = FALSE)
+write.csv(res, PARAFIXSITES_LATEST_FILE, row.names = FALSE)

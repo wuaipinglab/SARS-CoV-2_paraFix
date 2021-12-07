@@ -1,6 +1,7 @@
 library(ape)
 library(jsonlite)
 library(sitePath)
+library(ggplot2)
 suppressPackageStartupMessages(library(trackViewer))
 
 DATA_DIR <- "Data"
@@ -344,22 +345,25 @@ lolliplot(
 )
 
 
-p <- plot(fixed) + theme(legend.position = "none")
-print(p)
+p <- plot(fixed) + theme(legend.position = "none",
+                         panel.background = element_rect(fill = "transparent"), # bg of the panel
+                         plot.background = element_rect(fill = "transparent", color = NA),)
+# print(p)
 ggsave(
     filename = "Output/sitePath_fixation.svg",
     plot = p,
     device = "svg",
-    width = 10,
-    height = 6
+    width = 9,
+    height = 9,
+    bg = "transparent"
 )
 
 p <- plot(paraSites, y = F)
-print(p)
+# print(p)
 ggsave(
     filename = "Output/sitePath_parallel.svg",
     plot = p,
     device = "svg",
-    width = 10,
-    height = 6
+    width = 9,
+    height = 9
 )

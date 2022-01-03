@@ -54,7 +54,7 @@ for (fn in dir(TREES_DIR)) {
                          paste0("parallel_", PARALLEL_THRESHOLD, ".rds"))
     if (!file.exists(outFile)) {
         paraSites <- parallelSites(minEntropy, minSNP = minSNP)
-        saveRDS(para, file = outFile)
+        saveRDS(paraSites, file = outFile)
     } else {
         paraSites <- readRDS(outFile)
     }

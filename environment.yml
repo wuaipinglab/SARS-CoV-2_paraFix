@@ -1,0 +1,11 @@
+name: sitePath_application
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - biopython
+  - pandas
+  - matplotlib
+  - muscle
+  - hyphy

@@ -1,11 +1,16 @@
-name: sitePath_application
+name: cov_paraFix
 channels:
   - conda-forge
   - bioconda
   - defaults
 dependencies:
+  - ipykernel
   - biopython
   - pandas
   - matplotlib
+  - matplotlib-venn
   - muscle
   - hyphy
+  - r-phangorn
+  - r-jsonlite
+  - bioconductor-sitepath

@@ -1,20 +1,16 @@
+#!/usr/bin/env Rscript
+
 library(jsonlite)
 library(sitePath)
 
-
-SITESMAPPING_FILE <- "Data/sitesMapping.csv"
-
 PARALLEL_THRESHOLD <- 0.001
 
-TREES_DIR <- "Data/nextstrain_trees_with_MSA/"
-SITEPATH_RES_DIR <- "Data/nextstrain_sitePath_results/"
-PARAFIXSITES_FILE <- "Data/nextstrain_sitePath_results.csv"
-DATES_FILE <- "Data/nextstrain_dates.json"
+SITESMAPPING_FILE <- "data/sitesMapping.csv"
+DATES_FILE <- "data/nextstrain_dates.json"
+TREES_DIR <- "data/nextstrain_trees_with_MSA/"
 
-# TREES_DIR <- "Data/sampled_trees_with_MSA/"
-# SITEPATH_RES_DIR <- "Data/sampled_sitePath_results/"
-# PARAFIXSITES_FILE <- "Data/sampled_sitePath_results.csv"
-# DATES_FILE <- "Data/sampled_dates.json"
+SITEPATH_RES_DIR <- "output/nextstrain_sitePath_results/"
+PARAFIXSITES_FILE <- "output/nextstrain_sitePath_results.csv"
 
 
 cat("Run sitePath for each date\n")

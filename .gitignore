@@ -1,6 +1,8 @@
-Data/
-Output/
-Scripts/scratch*
+data/
+obsolete/
+output/
+plots/
+.ipynb_checkpoints/
 
 .Rprofile
 # Created by https://www.toptal.com/developers/gitignore/api/r

@@ -2,6 +2,7 @@ data/
 obsolete/
 output/
 plots/
+.vscode/
 .ipynb_checkpoints/
 
 .Rprofile

@@ -23,7 +23,7 @@ for (fn in allDates) {
     print(fn)
     outputDir <- file.path(SITEPATH_RES_DIR, fn)
     dir.create(outputDir, showWarnings = FALSE)
-    
+
     outFile <- file.path(outputDir, paste0(fn, ".rds"))
     if (!file.exists(outFile)) {
         inputDir <- file.path(TREES_DIR, fn)
@@ -38,28 +38,30 @@ for (fn in allDates) {
     } else {
         minEntropy <- readRDS(outFile)
     }
-    
+
     outFile <- file.path(outputDir, "fixation.rds")
     if (!file.exists(outFile)) {
         fixed <- fixationSites(minEntropy)
         saveRDS(fixed, file = outFile)
     }
-    
+
     outFile <- file.path(outputDir, "parallel.rds")
     if (!file.exists(outFile)) {
         para <- parallelSites(minEntropy)
         saveRDS(para, file = outFile)
     }
-    
+
     outFile <- file.path(outputDir, "paraFix.rds")
     if (!file.exists(outFile)) {
         paraFix <- paraFixSites(minEntropy, mutMode = "all")
         saveRDS(paraFix, file = outFile)
     }
-    
+
     minSNP <- PARALLEL_THRESHOLD * ape::Ntip(as.phylo(minEntropy))
-    outFile <- file.path(outputDir,
-                         paste0("parallel_", PARALLEL_THRESHOLD, ".rds"))
+    outFile <- file.path(
+        outputDir,
+        paste0("parallel_", PARALLEL_THRESHOLD, ".rds")
+    )
     if (!file.exists(outFile)) {
         para <- parallelSites(minEntropy, minSNP = minSNP)
         saveRDS(para, file = outFile)
@@ -73,7 +75,7 @@ sitesMapping <- read.csv(SITESMAPPING_FILE, row.names = 1)
 
 allSites <- lapply(allDates, function(collectionDate) {
     print(collectionDate)
-    
+
     resDir <- file.path(SITEPATH_RES_DIR, collectionDate)
     fixedSites <- readRDS(file.path(resDir, "fixation.rds"))
     # paraSites <- readRDS(file.path(resDir, "parallel.rds"))
@@ -81,7 +83,7 @@ allSites <- lapply(allDates, function(collectionDate) {
         "parallel_", PARALLEL_THRESHOLD, ".rds"
     )))
     collectionDate <- as.Date(collectionDate)
-    
+
     fixed <- allSitesName(fixedSites)
     para <- allSitesName(paraSites)
     paraFix <- intersect(fixed, para)
@@ -98,7 +100,6 @@ allSites <- lapply(allDates, function(collectionDate) {
             fixedOnly, paraOnly, paraFix
         )))
     )
-    
 })
 
 res <- merge(

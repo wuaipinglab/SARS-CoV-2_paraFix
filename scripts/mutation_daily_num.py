@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+
+import gc
 import datetime
 
 import pandas as pd
@@ -74,6 +77,7 @@ for aaPos in allSites:
                 "Mut_num": num,
                 "Site": int(aaPos)
             })
+    gc.collect()
 
 pd.DataFrame.from_records(mutation_num).to_csv(MUTATION_NUM_FILE, index=False)
 print(MUTATION_NUM_FILE, "saved!")

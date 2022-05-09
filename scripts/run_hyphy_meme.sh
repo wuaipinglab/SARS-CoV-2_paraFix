@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-HYPHY_DIR="data/nextstrain_hyphy_results/"
+HYPHY_DIR="output/nextstrain_hyphy_results/"
 
 for f in $(ls $HYPHY_DIR/*/*.nexus)
 do

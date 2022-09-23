@@ -8,7 +8,7 @@ This project uses [Bioconda](https://bioconda.github.io/) to manage package depe
 
 ```bash
 conda env update
-conda activate cov_paraFix
+conda activate ncov_paraFix
 ```
 
 ## Run the analysis

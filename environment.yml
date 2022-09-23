@@ -1,4 +1,4 @@
-name: cov_paraFix
+name: ncov_paraFix
 channels:
   - conda-forge
   - bioconda
@@ -12,6 +12,7 @@ dependencies:
   - matplotlib-venn
   - muscle
   - hyphy
+  - r-languageserver
   - r-phangorn
   - r-jsonlite
   - r-svglite
